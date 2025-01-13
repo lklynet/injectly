@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("./database");
 const path = require("path");
+
 const app = express();
 
 // Middleware

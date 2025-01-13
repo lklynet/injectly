@@ -11,29 +11,6 @@ html, body {
   line-height: 1.4;
 }
 
-footer {
-  color: #76c7c0;
-  text-align: center;
-  font-size: 14px;
-  margin-top: 2rem;
-  padding: 1rem 0;
-  background-color: #1e1e1e;
-  border-top: 1px solid #292929;
-}
-
-footer a {
-  color: #76c7c0;
-  text-decoration: none;
-}
-
-footer a:hover {
-  color: #64b0a9;
-}
-
-footer p {
-  margin: 0;
-}
-
 main.container {
   max-width: 1200px;
   display: flex;
