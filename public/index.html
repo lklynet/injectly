@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script defer data-domain="injectly.lkly.net" src="https://plausible.kell.ly/js/script.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Injectly - Simple Code Injection</title>
@@ -12,59 +13,88 @@
       color: #e0e0e0;
       margin: 0;
       padding: 0;
-      line-height: 1.6;
-    }
-
-    /* Center Content */
-    .centered {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      min-height: 100vh;
       text-align: center;
-      margin-bottom: 2rem;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      color: #76c7c0;
+    /* Container Styling */
+    .container {
+      max-width: 900px;
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
 
-    .subtitle {
-      font-size: 1.25rem;
-      color: #aaa;
+    /* Header Styling */
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    /* Logo */
-    .logo {
+    header img {
       width: 100px;
       height: auto;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: #76c7c0;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: #aaa;
+      margin: 0;
     }
 
     /* Features Section */
     .features {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       gap: 2rem;
+      align-items: center;
     }
 
     .screenshots img {
-      max-width: 60%;
+      width: 60%;
+      max-width: 100%;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
-    .docker-command {
-      display: flex;
-      align-items: center;
+    /* Docker Command Section */
+    .docker {
       background-color: #1e1e1e;
       padding: 1rem;
       border-radius: 8px;
-      overflow-x: auto;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .docker pre {
+      margin: 0;
+      padding: 0;
       font-family: "Courier New", Courier, monospace;
+      font-size: 0.9rem;
       color: #76c7c0;
+      white-space: nowrap;
+      overflow-x: auto;
     }
 
     #copyButton {
-      margin-left: 1rem;
       background-color: #76c7c0;
       color: #121212;
       border: none;
@@ -72,7 +102,7 @@
       font-size: 0.875rem;
       border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     #copyButton:hover {
@@ -82,23 +112,24 @@
 </head>
 <body>
   <main class="container">
-    <header class="centered">
-        <script defer data-domain="injectly.lkly.net" src="https://plausible.kell.ly/js/script.js"></script>
-      <img src="assets/injectly.svg" alt="Injectly Logo" class="logo" />
+    <!-- Header Section -->
+    <header>
+      <img src="assets/injectly.svg" alt="Injectly Logo" />
       <h1>Injectly</h1>
-      <p class="subtitle">Streamline header code injection across your sites</p>
+      <p>Streamline header code injection across your sites</p>
     </header>
 
+    <!-- Features Section -->
     <section class="features">
+      <!-- Screenshot Section -->
       <div class="screenshots">
-        <img id="screenshot" src="assets/screenshot1.png" alt="Screenshot" />
+        <img id="screenshot" src="assets/screenshot1.png" alt="App Screenshot" />
       </div>
+
+      <!-- Docker Command Section -->
       <div class="docker">
-        <h2>Quick Start</h2>
-        <pre class="docker-command">
-          docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest
-          <button id="copyButton">Copy</button>
-        </pre>
+        <pre>docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest</pre>
+        <button id="copyButton">Copy</button>
       </div>
     </section>
   </main>
@@ -120,7 +151,6 @@
       navigator.clipboard.writeText(
         "docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest"
       );
-      alert("Copied to clipboard!");
     });
   </script>
 </body>
