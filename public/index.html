@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Injectly - Simple Code Injection</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #12191f;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+
+    /* Center Content */
+    .centered {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #76c7c0;
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      color: #aaa;
+    }
+
+    /* Logo */
+    .logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
+    /* Features Section */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .screenshots img {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .docker-command {
+      display: flex;
+      align-items: center;
+      background-color: #1e1e1e;
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "Courier New", Courier, monospace;
+      color: #76c7c0;
+    }
+
+    #copyButton {
+      margin-left: 1rem;
+      background-color: #76c7c0;
+      color: #121212;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #copyButton:hover {
+      background-color: #64b0a9;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header class="centered">
+      <img src="assets/injectly.svg" alt="Injectly Logo" class="logo" />
+      <h1>Injectly</h1>
+      <p class="subtitle">Streamline header code injection across your sites</p>
+    </header>
+
+    <section class="features">
+      <div class="screenshots">
+        <img id="screenshot" src="assets/screenshot1.png" alt="Screenshot" />
+      </div>
+      <div class="docker">
+        <h2>Quick Start</h2>
+        <pre class="docker-command">
+          docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest
+          <button id="copyButton">Copy</button>
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Screenshot rotation
+    const screenshots = ["assets/screenshot1.png", "assets/screenshot2.png"];
+    let currentScreenshot = 0;
+    const screenshotElement = document.getElementById("screenshot");
+
+    setInterval(() => {
+      currentScreenshot = (currentScreenshot + 1) % screenshots.length;
+      screenshotElement.src = screenshots[currentScreenshot];
+    }, 5000);
+
+    // Copy button functionality
+    const copyButton = document.getElementById("copyButton");
+    copyButton.addEventListener("click", () => {
+      navigator.clipboard.writeText(
+        "docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest"
+      );
+      alert("Copied to clipboard!");
+    });
+  </script>
+</body>
+</html>
