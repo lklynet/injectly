@@ -1,0 +1,264 @@
+/* General Styling */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+
+body {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #e0e0e0;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+main.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  background-color: #1e1e1e;
+}
+
+header {
+  text-align: center;
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center; /* Centers vertically */
+}
+
+header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: #ffffff;
+}
+
+/* Title Container Styling */
+.title-container {
+  display: flex;
+  align-items: center; /* Align logo and title vertically */
+  gap: 0.5rem; /* Space between logo and title */
+}
+
+/* Logo Styling */
+.title-container img.logo {
+  width: 2rem; /* Adjust logo size */
+  height: auto;
+}
+
+#uniqueScriptContainer {
+  margin-bottom: 2rem;
+}
+
+#uniqueScriptContainer h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.script-display {
+  display: flex;
+  align-items: center; /* Centers items vertically */
+  justify-content: space-between; /* Ensures the button stays at the right */
+  background-color: #1e1e1e;
+  padding: 0.25rem; /* Slightly increase padding for better spacing */
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#scriptCode {
+  flex-grow: 1;
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+  color: #76c7c0;
+  padding: 0.5rem;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+#copyButton {
+  font-size: 0.75rem;
+  width: 5rem;
+  height: 2rem;
+  margin: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  display: flex;
+  align-items: center; /* Centers the text/icon inside the button */
+  justify-content: center;
+}
+
+#copyButton:hover {
+  background-color: #64b0a9;
+}
+
+.scripts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.scripts-header h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.add-button {
+  background-color: #76c7c0;
+  color: #121212;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  width: 8rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-button:hover {
+  background-color: #64b0a9;
+}
+
+#scriptCardsContainer h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background-color: #292929;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 0; /* Ensure no extra margins */
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card h3 {
+  font-size: 1rem;
+  color: #76c7c0;
+  margin-bottom: 0.5rem;
+}
+
+.card p {
+  margin: 0.5rem 0;
+  font-size: 0.75rem; /* Smaller paragraph font size */
+  color: #bbb;
+}
+
+.card button {
+  margin-top: 1rem;
+  background-color: #333;
+  color: #76c7c0;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
+}
+
+.card button:hover {
+  background-color: #76c7c0;
+  color: #121212;
+}
+
+/* Buttons */
+button {
+  background-color: #76c7c0;
+  color: #121212;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem; /* Smaller button font size */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #64b0a9;
+}
+
+/* Modal */
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+.modal-content {
+  background-color: #1e1e1e;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 400px;
+  font-size: 0.875rem; /* Adjust modal font size */
+}
+
+.modal h3 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem; /* Slightly larger modal title */
+}
+
+.modal label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #bbb;
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #292929;
+  color: #e0e0e0;
+  font-size: 0.875rem;
+}
+
+.modal button {
+  width: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  main.container {
+    padding: 0.5rem;
+  }
+}
+
+/* Hidden State */
+.modal.hidden {
+  display: none !important;
+}
+
+.copy-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

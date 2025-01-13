@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Injectly</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <div class="title-container">
+          <img src="./assets/injectly.svg" alt="Injectly Logo" class="logo" />
+          <h1>Injectly</h1>
+        </div>
+      </header>
+      <section id="uniqueScriptContainer">
+        <h2>Injection Script</h2>
+        <div class="script-display">
+          <pre id="scriptCode">
+&lt;script src="<%= injectScriptURL %>"&gt;&lt;/script&gt;</pre
+          >
+          <button id="copyButton">Copy</button>
+        </div>
+      </section>
+
+      <section id="scriptCardsContainer">
+        <div class="scripts-header">
+          <h2>Your Scripts</h2>
+          <button id="addScript" class="add-button">+ Add Script</button>
+        </div>
+        <div id="scriptCards" class="grid"></div>
+      </section>
+      <div id="scriptModal" class="modal hidden">
+        <div class="modal-content">
+          <h3 id="formTitle">Add Script</h3>
+          <form id="scriptForm">
+            <label for="name">Script Name</label>
+            <input type="text" id="name" required />
+            <label for="content">Script Content</label>
+            <textarea id="content" rows="4" required></textarea>
+            <button type="submit">Save</button>
+            <button type="button" id="cancel">Cancel</button>
+          </form>
+        </div>
+      </div>
+      <script src="scripts.js"></script>
+    </main>
+  </body>
+</html>
