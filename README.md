@@ -5,6 +5,8 @@
 
 **Injectly** is a simple, self-hosted code injector app designed to streamline the process of managing and injecting scripts across multiple websites. Add, edit, and manage all your scripts from a single unified interface, and dynamically update your websites with one embedded script.
 
+![2025-01-13](/public/assets/screenshot1.png)
+
 ---
 
 ## **Features**
@@ -14,6 +16,8 @@
 - **Real-time Updates**: Changes to scripts instantly reflect across all connected websites.
 - **User-Friendly Design**: Minimalist, responsive UI built with Pico CSS for ease of use.
 - **Self-Hosted**: Full control over your data and functionality.
+
+![2025-01-13](/public/assets/screenshot2.png)
 
 ---
 
