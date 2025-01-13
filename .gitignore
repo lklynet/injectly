@@ -40,4 +40,4 @@ Thumbs.db
 *.temp
 
 # EJS Templates Cache
-*.ejs~
+*.ejs~+

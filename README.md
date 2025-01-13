@@ -48,9 +48,9 @@ Visit <http://localhost:3000> in your web browser.
 
 ### **1. Add the Unique Script to Your Website:**
 
-Copy the provided script tag from the Injectly dashboard and paste it into the <head> section of your website:
+Copy the provided script tag from the Injectly dashboard and paste it into the `<head>` section of your website:
 
-```bash
+```html
 <script src="http://your-server.com/inject.js"></script>
 ```
 
