@@ -1,11 +1,20 @@
-FROM node:18-slim
-WORKDIR /app
-RUN apt-get update && apt-get install -y \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Use a lightweight Node.js image
+FROM node:18-alpine
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json first to leverage Docker's caching
+COPY package*.json ./
+
+# Install dependencies (show logs during this step)
+RUN npm install --loglevel verbose
+
+# Copy the rest of the application files
 COPY . .
-RUN if [ -d "/app/.git" ]; then echo ".git directory copied successfully"; else echo "Error: .git directory not found"; fi
-RUN npm install
+
+# Expose the app port
 EXPOSE 3000
-CMD ["node", "app.js"]
+
+# Define the command to run your app
+CMD ["node", "server/app.js"]
