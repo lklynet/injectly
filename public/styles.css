@@ -1,17 +1,20 @@
 /* General Styling */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
-body {
-  font-family: "Inter", sans-serif;
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  color: #e0e0e0;
+  background-color: #12191f;
+  color: #e0e0e0; /* Adjust text color for contrast */
+  font-family: "Inter", sans-serif;
   line-height: 1.4;
-  font-size: 14px;
 }
 
 main.container {
   max-width: 1200px;
+  display: flex;
+  flex-direction: column;
   margin: 2rem auto;
   padding: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -22,8 +25,8 @@ main.container {
 header {
   text-align: center;
   display: flex;
-  justify-content: center; /* Centers horizontally */
-  align-items: center; /* Centers vertically */
+  justify-content: center;
+  align-items: center;
 }
 
 header h1 {
@@ -32,16 +35,14 @@ header h1 {
   color: #ffffff;
 }
 
-/* Title Container Styling */
 .title-container {
   display: flex;
-  align-items: center; /* Align logo and title vertically */
-  gap: 0.5rem; /* Space between logo and title */
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Logo Styling */
 .title-container img.logo {
-  width: 2rem; /* Adjust logo size */
+  width: 2rem;
   height: auto;
 }
 
@@ -56,10 +57,10 @@ header h1 {
 
 .script-display {
   display: flex;
-  align-items: center; /* Centers items vertically */
-  justify-content: space-between; /* Ensures the button stays at the right */
+  align-items: center;
+  justify-content: space-between;
   background-color: #1e1e1e;
-  padding: 0.25rem; /* Slightly increase padding for better spacing */
+  padding: 0.25rem;
   border-radius: 8px;
   overflow: hidden;
 }
