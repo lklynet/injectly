@@ -1,6 +1,7 @@
 const express = require("express");
 const db = require("./database");
 const path = require("path");
+const child_process = require("child_process");
 
 const app = express();
 
@@ -11,6 +12,28 @@ app.use(express.static("public"));
 // Set up EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+// Function to get version from Git
+function getVersionFromGit() {
+  try {
+    const version = child_process
+      .execSync("git describe --tags", { cwd: __dirname })
+      .toString()
+      .trim();
+    return version;
+  } catch (error) {
+    console.error("Error fetching version:", error.message);
+    return "Unknown";
+  }
+}
+
+// Fetch the version
+const INJECTLY_VERSION = getVersionFromGit();
+
+// Endpoint to expose version
+app.get("/version", (req, res) => {
+  res.json({ version: INJECTLY_VERSION });
+});
 
 // Add a new script
 app.post("/scripts", (req, res) => {
@@ -62,6 +85,7 @@ app.delete("/scripts/:id", (req, res) => {
   res.json({ success: true });
 });
 
+// Serve the dynamic injector script
 app.get("/inject.js", (req, res) => {
   const scripts = db.prepare("SELECT content FROM scripts").all();
 
@@ -110,13 +134,16 @@ app.get("/inject.js", (req, res) => {
   res.send(injectorScript);
 });
 
-// Serve index.ejs with dynamic script link
+// Serve index.ejs with dynamic script link and version
 app.get("/", (req, res) => {
   const host = req.headers.host; // Detect the hostname
   const protocol = req.protocol; // Detect the protocol (http or https)
   const injectScriptURL = `${protocol}://${host}/inject.js`; // Construct the script URL
 
-  res.render("index", { injectScriptURL }); // Pass the script URL to the template
+  res.render("index", {
+    injectScriptURL,
+    version: INJECTLY_VERSION, // Pass the version to the template
+  });
 });
 
 // Start the server
