@@ -6,14 +6,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-// Serve all static files except index.html
-app.use((req, res, next) => {
-  if (req.path === "/" && req.accepts("html")) {
-    next(); // Skip static middleware for "/"
-  } else {
-    express.static("public")(req, res, next);
-  }
-});
+app.use(express.static("public"));
 
 // Set up EJS
 app.set("view engine", "ejs");
