@@ -8,6 +8,18 @@ document.addEventListener("DOMContentLoaded", () => {
     6: "bg-pink-500",
     7: "bg-orange-500",
     8: "bg-teal-500",
+    9: "bg-cyan-500",
+    10: "bg-amber-500",
+    11: "bg-red-300",     // Lighter red
+    12: "bg-blue-300",    // Lighter blue
+    13: "bg-green-300",   // Lighter green
+    14: "bg-yellow-300",  // Lighter yellow
+    15: "bg-purple-300",  // Lighter purple
+    16: "bg-pink-300",    // Lighter pink
+    17: "bg-orange-300",  // Lighter orange
+    18: "bg-teal-300",    // Lighter teal
+    19: "bg-cyan-300",    // Lighter cyan
+    20: "bg-amber-300",   // Lighter amber
   };
 
   const scriptCards = document.getElementById("scriptCards");
