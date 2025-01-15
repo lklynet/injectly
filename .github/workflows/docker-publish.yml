@@ -3,7 +3,7 @@ name: Docker Image CI/CD
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'  # Trigger workflow on version tag pushes (e.g., v2.2.3)
 
 jobs:
   build-and-push:
