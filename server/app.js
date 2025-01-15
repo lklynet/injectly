@@ -58,19 +58,51 @@ app.get("/scripts", (req, res) => {
   const scripts = db
     .prepare(
       `
-    SELECT id, name, created_at, updated_at 
-    FROM scripts
-  `
+      SELECT s.id, s.name, s.content, s.created_at, s.updated_at,
+             GROUP_CONCAT(JSON_OBJECT(
+               'id', st.id,
+               'domain', st.domain
+             )) AS assignedSites
+      FROM scripts s
+      LEFT JOIN script_sites ss ON s.id = ss.script_id
+      LEFT JOIN sites st ON ss.site_id = st.id
+      GROUP BY s.id
+    `
     )
     .all();
-  res.json(scripts);
+
+  // Parse the `assignedSites` JSON data for each script
+  const parsedScripts = scripts.map((script) => {
+    return {
+      ...script,
+      assignedSites: script.assignedSites
+        ? JSON.parse(`[${script.assignedSites}]`)
+        : [],
+    };
+  });
+
+  res.json(parsedScripts);
 });
 
 // Fetch a specific script
 app.get("/scripts/:id", (req, res) => {
-  const stmt = db.prepare("SELECT * FROM scripts WHERE id = ?");
-  const script = stmt.get(req.params.id);
-  res.json(script);
+  const { id } = req.params;
+  const script = db.prepare("SELECT * FROM scripts WHERE id = ?").get(id);
+
+  if (!script) {
+    return res.status(404).json({ error: "Script not found." });
+  }
+
+  const assignedSites = db
+    .prepare(
+      `SELECT sites.id, sites.domain 
+         FROM sites 
+         JOIN script_sites ON sites.id = script_sites.site_id 
+         WHERE script_sites.script_id = ?`
+    )
+    .all(id);
+
+  res.json({ ...script, assignedSites });
 });
 
 // Update a script
@@ -92,53 +124,81 @@ app.delete("/scripts/:id", (req, res) => {
   res.json({ success: true });
 });
 
+// Delete a site
+app.delete("/sites/:id", (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Remove references to this site in script_sites
+    const deleteAssociations = db.prepare(
+      "DELETE FROM script_sites WHERE site_id = ?"
+    );
+    deleteAssociations.run(id);
+
+    // Delete the site from the sites table
+    const deleteSite = db.prepare("DELETE FROM sites WHERE id = ?");
+    deleteSite.run(id);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting site:", error.message);
+    res.status(500).json({ error: "Failed to delete site." });
+  }
+});
+
 // Serve the dynamic injector script
 app.get("/inject.js", (req, res) => {
-  const scripts = db.prepare("SELECT content FROM scripts").all();
+  const referer = req.headers.referer;
+  const siteDomain = req.query.site || (referer && new URL(referer).host);
+
+  if (!siteDomain) {
+    return res.status(400).send("Site domain not provided.");
+  }
+
+  // Check for exact or wildcard match in the database
+  const site = db
+    .prepare(
+      `
+        SELECT * FROM sites 
+        WHERE domain = ? 
+           OR (domain LIKE '%.%' AND ? LIKE REPLACE(domain, '*.', ''))
+      `
+    )
+    .get(siteDomain, siteDomain);
+
+  if (!site) {
+    return res.status(404).send(`Site ${siteDomain} not registered.`);
+  }
+
+  // Fetch scripts assigned to the site
+  const scripts = db
+    .prepare(
+      `
+        SELECT scripts.content 
+        FROM scripts 
+        JOIN script_sites ON scripts.id = script_sites.script_id 
+        WHERE script_sites.site_id = ?
+      `
+    )
+    .all(site.id);
 
   const processedScripts = scripts
-    .map((script) => {
-      const content = script.content.trim();
-      if (content.startsWith("<script")) {
-        // Handle <script> tags
-        return `
-            (function() {
-              var tempDiv = document.createElement('div');
-              tempDiv.innerHTML = \`${content}\`;
-              var scriptTag = tempDiv.firstChild;
-              document.head.appendChild(scriptTag);
-            })();
-          `;
-      } else if (
-        content.startsWith("(function()") &&
-        content.endsWith("})();")
-      ) {
-        // Script is already an IIFE, include as-is
-        return content;
-      } else {
-        // Wrap non-IIFE plain JavaScript
-        return `
-            (function() {
-              ${content}
-            })();
-          `;
-      }
-    })
+    .map((script) => script.content.trim())
     .join("\n");
 
-  const injectorScript = `
-      (function() {
-        console.log('Injectly: Loading scripts...');
-        try {
-          ${processedScripts}
-        } catch (e) {
-          console.error('Injectly Error:', e);
-        }
-      })();
-    `;
-
   res.type("application/javascript");
-  res.send(injectorScript);
+  res.send(`
+      (function() {
+        console.log('Injectly: Loading scripts for ${siteDomain}...');
+        document.addEventListener('DOMContentLoaded', function() {
+          try {
+            ${processedScripts}
+          } catch (e) {
+            console.error('Injectly Error:', e);
+          }
+        });
+      })();
+    `);
 });
 
 // Serve index.ejs with dynamic script link and version
@@ -151,6 +211,53 @@ app.get("/", (req, res) => {
     injectScriptURL,
     version: INJECTLY_VERSION, // Pass the version to the template
   });
+});
+
+// Add a new site
+app.post("/sites", (req, res) => {
+  const { domain } = req.body;
+
+  try {
+    const result = db
+      .prepare("INSERT INTO sites (domain) VALUES (?)")
+      .run(domain);
+    res.json({ id: result.lastInsertRowid, domain });
+  } catch (error) {
+    res.status(400).json({ error: "Domain already exists or invalid." });
+  }
+});
+
+// Fetch all sites
+app.get("/sites", (req, res) => {
+  const sites = db.prepare("SELECT * FROM sites").all();
+  res.json(sites);
+});
+
+// Assign a script to sites
+app.post("/scripts/:id/sites", (req, res) => {
+  const { id } = req.params;
+  const { siteIds } = req.body; // Array of site IDs
+
+  try {
+    // Remove existing site associations for this script
+    const deleteStmt = db.prepare(
+      "DELETE FROM script_sites WHERE script_id = ?"
+    );
+    deleteStmt.run(id);
+
+    // Add the new site associations
+    const insertStmt = db.prepare(
+      "INSERT INTO script_sites (script_id, site_id) VALUES (?, ?)"
+    );
+    for (const siteId of siteIds) {
+      insertStmt.run(id, siteId);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating sites:", error.message);
+    res.status(500).json({ error: "Failed to update sites." });
+  }
 });
 
 // Start the server

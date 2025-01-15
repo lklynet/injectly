@@ -5,56 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Injectly</title>
     <link rel="icon" type="image/x-icon" href="./assets/favicon.ico" />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
-    />
-    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body>
-    <main class="container">
-      <header>
-        <div class="title-container">
-          <img src="./assets/injectly.svg" alt="Injectly Logo" class="logo" />
-          <h1>Injectly</h1>
+  <body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
+    <main class="container mx-auto p-6 flex-grow">
+      <!-- Header -->
+      <header class="text-center mb-8">
+        <div class="flex flex-col items-center">
+          <img
+            src="./assets/injectly.svg"
+            alt="Injectly Logo"
+            class="w-20 h-20 mb-4"
+          />
+          <h1 class="text-4xl font-bold text-blue-400">Injectly</h1>
         </div>
       </header>
-      <section id="uniqueScriptContainer">
-        <h2>Injection Script</h2>
-        <div class="script-display">
-          <pre id="scriptCode">
+
+      <!-- Injection Script Section -->
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-100">
+          Injection Script
+        </h2>
+        <div
+          class="flex items-center bg-gray-800 p-4 rounded-lg shadow-md overflow-auto"
+        >
+          <pre
+            id="scriptCode"
+            class="flex-grow text-sm font-mono text-blue-400 overflow-x-auto"
+          >
 &lt;script src="<%= injectScriptURL %>"&gt;&lt;/script&gt;</pre
           >
-          <button id="copyButton">Copy</button>
+          <button
+            id="copyButton"
+            class="ml-4 px-4 py-2 bg-blue-500 text-sm text-gray-900 rounded hover:bg-blue-400"
+          >
+            Copy
+          </button>
         </div>
       </section>
 
-      <section id="scriptCardsContainer">
-        <div class="scripts-header">
-          <h2>Your Scripts</h2>
-          <button id="addScript" class="add-button">+ Add Script</button>
+      <!-- Manage Sites Section -->
+      <section id="manage-sites" class="mt-8">
+        <h2 class="text-xl font-semibold mb-4 text-gray-100">Manage Sites</h2>
+        <form id="addSiteForm" class="flex gap-4 mb-4">
+          <input
+            type="text"
+            id="domain"
+            name="domain"
+            placeholder="example.com"
+            required
+            class="flex-grow p-2 border rounded bg-gray-700 text-gray-200 border-gray-600"
+          />
+          <button
+            type="submit"
+            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-400"
+          >
+            Add Website
+          </button>
+        </form>
+        <div
+          id="siteGrid"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        >
+          <!-- Dynamically generated site cards go here -->
         </div>
-        <div id="scriptCards" class="grid"></div>
       </section>
-      <div id="scriptModal" class="modal hidden">
-        <div class="modal-content">
-          <h3 id="formTitle">Add Script</h3>
+
+      <!-- Your Scripts Section -->
+      <section id="scriptCardsContainer" class="mt-8">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-100">Your Scripts</h2>
+          <button
+            id="addScript"
+            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-400"
+          >
+            + Add Script
+          </button>
+        </div>
+        <div
+          id="scriptCards"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          <!-- Dynamically generated script cards go here -->
+        </div>
+      </section>
+
+      <!-- Modal -->
+      <div
+        id="scriptModal"
+        class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden"
+      >
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+          <h3 id="formTitle" class="text-lg font-semibold mb-4 text-gray-200">
+            Add Script
+          </h3>
           <form id="scriptForm">
-            <label for="name">Script Name</label>
-            <input type="text" id="name" required />
-            <label for="content">Script Content</label>
-            <textarea id="content" rows="4" required></textarea>
-            <button type="submit">Save</button>
-            <button type="button" id="cancel">Cancel</button>
+            <label
+              for="name"
+              class="block mb-2 text-sm font-medium text-gray-400"
+              >Script Name</label
+            >
+            <input
+              type="text"
+              id="name"
+              required
+              class="w-full px-4 py-2 mb-4 bg-gray-700 text-gray-200 rounded"
+            />
+
+            <label
+              for="content"
+              class="block mb-2 text-sm font-medium text-gray-400"
+              >Script Content</label
+            >
+            <textarea
+              id="content"
+              rows="4"
+              required
+              class="w-full px-4 py-2 mb-4 bg-gray-700 text-gray-200 rounded"
+            ></textarea>
+
+            <label
+              for="sites"
+              class="block mb-2 text-sm font-medium text-gray-400"
+              >Assign to Websites</label
+            >
+            <div id="siteCheckboxes" class="space-y-2 mb-4 text-gray-300"></div>
+
+            <div class="flex gap-4">
+              <button
+                type="submit"
+                class="flex-grow px-4 py-2 bg-blue-500 text-sm text-gray-900 rounded hover:bg-blue-400"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                id="cancel"
+                class="px-4 py-2 bg-gray-600 text-sm text-gray-300 rounded hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         </div>
       </div>
-      <script src="scripts.js"></script>
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-center py-4 mt-auto">
+      <a
+        href="https://github.com/lklynet/injectly"
+        target="_blank"
+        class="text-blue-400 hover:underline"
+      >
+        <p id="version-info">Version: <%= version %></p>
+      </a>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="scripts.js"></script>
   </body>
-  <footer>
-    <a href="https://github.com/lklynet/injectly" target="_blank">
-      <p id="version-info">Version: <%= version %></p>
-    </a>
-  </footer>
 </html>
