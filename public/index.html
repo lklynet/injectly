@@ -5,131 +5,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Injectly - Simple Code Injection</title>
-  <style>
-    /* General Styling */
-    body {
-      font-family: "Inter", sans-serif;
-      background-color: #12191f;
-      color: #e0e0e0;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      min-height: 100vh;
-      text-align: center;
-    }
-
-    /* Container Styling */
-    .container {
-      max-width: 900px;
-      width: 100%;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    /* Header Styling */
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    header img {
-      width: 100px;
-      height: auto;
-    }
-
-    header h1 {
-      font-size: 2rem;
-      color: #76c7c0;
-      margin: 0;
-    }
-
-    header p {
-      font-size: 1rem;
-      color: #aaa;
-      margin: 0;
-    }
-
-    /* Features Section */
-    .features {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      align-items: center;
-    }
-
-    .screenshots img {
-      width: 60%;
-      max-width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Docker Command Section */
-    .docker {
-      background-color: #1e1e1e;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .docker pre {
-      margin: 0;
-      padding: 0;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 0.9rem;
-      color: #76c7c0;
-      white-space: nowrap;
-      overflow-x: auto;
-    }
-
-    #copyButton {
-      background-color: #76c7c0;
-      color: #121212;
-      border: none;
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    #copyButton:hover {
-      background-color: #64b0a9;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <main class="container">
+<body class="bg-gray-900 text-gray-100 flex flex-col items-center justify-center min-h-screen">
+  <main class="container mx-auto p-6 text-center">
     <!-- Header Section -->
     <header>
-      <img src="../assets/injectly.svg" alt="Injectly Logo" />
-      <h1>Injectly</h1>
-      <p>Streamline header code injection across your sites</p>
+      <img src="../assets/injectly.svg" alt="Injectly Logo" class="w-24 h-24 mx-auto mb-4" />
+      <h1 class="text-4xl font-bold text-teal-400 mb-2">Injectly</h1>
+      <p class="text-lg text-gray-400">Streamline header code injection across your sites</p>
     </header>
 
     <!-- Features Section -->
-    <section class="features">
+    <section class="mt-8">
       <!-- Screenshot Section -->
-      <div class="screenshots">
-        <img id="screenshot" src="../assets/screenshot1.png" alt="App Screenshot" />
+      <div class="mb-8">
+        <img id="screenshot" src="../assets/screenshot1.png" alt="App Screenshot" class="rounded-lg shadow-lg mx-auto w-4/5 sm:w-3/5" />
       </div>
 
       <!-- Docker Command Section -->
-      <div class="docker">
-        <pre>docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest</pre>
-        <button id="copyButton">Copy</button>
+      <div class="bg-gray-800 p-4 rounded-lg shadow-lg flex items-center justify-between">
+        <pre class="text-teal-400 font-mono text-sm overflow-auto">
+docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest</pre>
+        <button
+          id="copyButton"
+          class="bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold py-2 px-4 rounded ml-4"
+        >
+          Copy
+        </button>
       </div>
     </section>
   </main>
@@ -151,6 +54,7 @@
       navigator.clipboard.writeText(
         "docker run -p 3000:3000 -v ./data:/data lklynet/injectly:latest"
       );
+      alert("Docker command copied to clipboard!");
     });
   </script>
 </body>
