@@ -145,7 +145,9 @@ app.get("/", (req, res) => {
   if (!req.session.user) {
     return res.redirect("/login");
   }
-  res.render("index", { injectScriptURL: "/inject.js" });
+
+  const injectScriptURL = `${req.protocol}://${req.get("host")}/inject.js`;
+  res.render("index", { injectScriptURL });
 });
 
 app.post("/update-credentials", isAuthenticated, async (req, res) => {
