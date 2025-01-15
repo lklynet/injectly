@@ -1,14 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg id="sw-js-blob-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<svg width="100" height="100" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="--main-color:#3498db; --secondary-color:#2ecc71;">
   <defs>
-    <linearGradient id="sw-gradient" x1="0" x2="1" y1="1" y2="0">
-      <stop id="stop1" stop-color="#121212" offset="0" />
-      <stop id="stop2" stop-color="#76c7c0" offset="1" />
+    <!-- Linear Gradient for the Main Circle -->
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:var(--main-color);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:var(--secondary-color);stop-opacity:1" />
     </linearGradient>
+
+    <!-- Radial Gradient for Inner Shading -->
+    <radialGradient id="inner-shading" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:black; stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:black; stop-opacity:0" />
+    </radialGradient>
+
+    <!-- Denser Noise Texture Pattern -->
+    <pattern id="texture" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="0.6" fill="black" opacity="0.1" />
+      <circle cx="3" cy="2" r="0.6" fill="black" opacity="0.1" />
+      <circle cx="4" cy="4" r="0.6" fill="black" opacity="0.1" />
+      <circle cx="2" cy="3" r="0.6" fill="black" opacity="0.1" />
+    </pattern>
   </defs>
-  <g transform="matrix(1.59946, 0, 0, 1.59946, -27.02216, -20.022554)">
-    <path fill="url(#sw-gradient)" d="M 66.427 27.489 C 73.227 34.489 81.527 45.289 78.927 54.289 C 76.327 63.189 62.727 70.189 48.927 70.389 C 35.027 70.589 20.827 63.989 17.627 54.689 C 14.427 45.489 22.327 33.589 29.427 26.389 C 36.527 19.289 42.927 16.889 48.627 17.189 C 54.427 17.489 59.727 20.589 66.427 27.489 Z" stroke-width="0" />
-    <circle cx="39.227" cy="50.69" r="3" fill="#1e1e1e" />
-    <circle cx="59.227" cy="50.69" r="3" fill="#1e1e1e" />
-  </g>
+
+  <!-- Main Breathing Circle -->
+  <circle cx="60" cy="60" r="30" fill="url(#gradient)">
+    <animate
+      attributeName="r"
+      values="30;35;30"
+      dur="3s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+    <animate
+      attributeName="cx"
+      values="60;62;60"
+      dur="4s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+  </circle>
+
+  <!-- Inner Shading -->
+  <circle cx="60" cy="60" r="30" fill="url(#inner-shading)">
+    <animate
+      attributeName="r"
+      values="30;35;30"
+      dur="3s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+    <animate
+      attributeName="cx"
+      values="60;62;60"
+      dur="4s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+  </circle>
+
+  <!-- Denser Texture -->
+  <circle cx="60" cy="60" r="30" fill="url(#texture)" opacity="0.5">
+    <animate
+      attributeName="r"
+      values="30;35;30"
+      dur="3s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+    <animate
+      attributeName="cx"
+      values="60;62;60"
+      dur="4s"
+      repeatCount="indefinite"
+      keyTimes="0;0.5;1"
+      keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+      calcMode="spline"
+    />
+  </circle>
 </svg>
