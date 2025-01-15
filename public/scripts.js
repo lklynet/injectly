@@ -114,48 +114,106 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   };
 
-  // Fetch and render scripts
-  const fetchAndRenderScripts = async () => {
-    const res = await fetch("/scripts");
-    const scripts = await res.json();
+// Function to dynamically inject scripts
+const injectDynamicScripts = (scripts) => {
+  scripts.forEach((script) => {
+    try {
+      const scriptElement = document.createElement("script");
+      scriptElement.src = script.src;
 
-    scriptCards.innerHTML = scripts
-      .map((script) => {
-        const assignedSites = script.assignedSites || []; // Assigned sites from backend
-        const siteFlags = assignedSites
-          .map((site) => {
-            // Ensure consistent color assignment using site ID
-            const colorClass =
-              COLORS[site.id % Object.keys(COLORS).length] || "bg-gray-500";
-            return `<div class="w-4 h-4 ${colorClass} rounded-full" title="${site.domain}"></div>`;
-          })
-          .join("");
+      // Add custom attributes to the script element
+      if (script.attributes) {
+        Object.entries(script.attributes).forEach(([key, value]) => {
+          scriptElement.setAttribute(key, value);
+        });
+      }
 
-        return `
-          <div class="p-4 bg-gray-800 rounded shadow">
-            <h3 class="text-lg font-semibold text-white">${script.name}</h3>
-            <p class="text-sm text-gray-400">Added: ${new Date(
-              script.created_at
-            ).toLocaleDateString()}</p>
-            <p class="text-sm text-gray-400">Updated: ${new Date(
-              script.updated_at
-            ).toLocaleDateString()}</p>
-            <div class="flex gap-2 mt-2">${siteFlags}</div>
-            <button class="edit mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${
-              script.id
-            }">
-              Edit
-            </button>
-            <button class="delete mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${
-              script.id
-            }">
-              Delete
-            </button>
-          </div>
-        `;
-      })
-      .join("");
-  };
+      // Append the script to the document head
+      document.head.appendChild(scriptElement);
+      console.log(`Injected script: ${script.src}`);
+    } catch (error) {
+      console.error("Error injecting script:", error);
+    }
+  });
+};
+
+// Fetch and render scripts
+const fetchAndRenderScripts = async () => {
+  const res = await fetch("/scripts");
+  const scripts = await res.json();
+
+  scriptCards.innerHTML = scripts
+    .map((script) => {
+      const assignedSites = script.assignedSites || []; // Assigned sites from backend
+      const siteFlags = assignedSites
+        .map((site) => {
+          // Ensure consistent color assignment using site ID
+          const colorClass =
+            COLORS[site.id % Object.keys(COLORS).length] || "bg-gray-500";
+          return `<div class="w-4 h-4 ${colorClass} rounded-full" title="${site.domain}"></div>`;
+        })
+        .join("");
+
+      return `
+        <div class="p-4 bg-gray-800 rounded shadow">
+          <h3 class="text-lg font-semibold text-white">${script.name}</h3>
+          <p class="text-sm text-gray-400">Added: ${new Date(
+            script.created_at
+          ).toLocaleDateString()}</p>
+          <p class="text-sm text-gray-400">Updated: ${new Date(
+            script.updated_at
+          ).toLocaleDateString()}</p>
+          <div class="flex gap-2 mt-2">${siteFlags}</div>
+          <button class="edit mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${
+            script.id
+          }">
+            Edit
+          </button>
+          <button class="delete mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${
+            script.id
+          }">
+            Delete
+          </button>
+        </div>
+      `;
+    })
+    .join("");
+
+  // Dynamically inject scripts
+  const dynamicScripts = scripts
+    .filter((script) => script.content && !script.src)
+    .map((script) => ({
+      src: script.src || null,
+      content: script.content,
+    }));
+
+  dynamicScripts.forEach((script) => {
+    if (script.content && script.content.startsWith("<script")) {
+      try {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = script.content.trim();
+        const scriptElement = tempDiv.firstChild;
+        document.head.appendChild(scriptElement);
+      } catch (error) {
+        console.error("Error injecting inline script:", error);
+      }
+    } else if (
+      script.content &&
+      script.content.startsWith("(function()") &&
+      script.content.endsWith("})();")
+    ) {
+      try {
+        eval(script.content); // Safely execute inline IIFE scripts
+      } catch (error) {
+        console.error("Error evaluating IIFE script:", error);
+      }
+    }
+  });
+
+  // Inject external scripts with attributes
+  const externalScripts = scripts.filter((script) => script.src);
+  injectDynamicScripts(externalScripts);
+};
 
   siteGrid.addEventListener("click", async (e) => {
     const target = e.target;

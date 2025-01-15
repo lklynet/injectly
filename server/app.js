@@ -182,23 +182,49 @@ app.get("/inject.js", (req, res) => {
     )
     .all(site.id);
 
+  // Construct the injector script
   const processedScripts = scripts
-    .map((script) => script.content.trim())
+    .map((script) => {
+      const content = script.content.trim();
+      if (content.startsWith("<script")) {
+        return `
+          (function() {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = \`${content}\`;
+            const scriptTag = tempDiv.firstChild;
+            document.head.appendChild(scriptTag);
+          })();
+        `;
+      } else if (
+        content.startsWith("(function()") &&
+        content.endsWith("})();")
+      ) {
+        return content; // Inline IIFE
+      } else {
+        return `
+          (function() {
+            ${content}
+          })();
+        `;
+      }
+    })
     .join("\n");
 
+  const injectorScript = `
+    (function() {
+      console.log('Injectly: Loading scripts for ${siteDomain}...');
+      document.addEventListener('DOMContentLoaded', function() {
+        try {
+          ${processedScripts}
+        } catch (e) {
+          console.error('Injectly Error:', e);
+        }
+      });
+    })();
+  `;
+
   res.type("application/javascript");
-  res.send(`
-      (function() {
-        console.log('Injectly: Loading scripts for ${siteDomain}...');
-        document.addEventListener('DOMContentLoaded', function() {
-          try {
-            ${processedScripts}
-          } catch (e) {
-            console.error('Injectly Error:', e);
-          }
-        });
-      })();
-    `);
+  res.send(injectorScript);
 });
 
 // Serve index.ejs with dynamic script link and version
