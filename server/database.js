@@ -3,6 +3,7 @@ const path = require("path");
 const dbPath = process.env.DB_PATH || path.join("/data", "database.db");
 const db = new Database(dbPath);
 
+// Create `scripts` table
 db.exec(`
   CREATE TABLE IF NOT EXISTS scripts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,20 +14,31 @@ db.exec(`
   )
 `);
 
+// Create `sites` table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS sites (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      domain TEXT NOT NULL UNIQUE
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS sites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    domain TEXT NOT NULL UNIQUE
+  )
+`);
 
+// Create `script_sites` junction table
 db.exec(`
-    CREATE TABLE IF NOT EXISTS script_sites (
-      script_id INTEGER NOT NULL,
-      site_id INTEGER NOT NULL,
-      FOREIGN KEY (script_id) REFERENCES scripts(id) ON DELETE CASCADE,
-      FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS script_sites (
+    script_id INTEGER NOT NULL,
+    site_id INTEGER NOT NULL,
+    FOREIGN KEY (script_id) REFERENCES scripts(id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+  )
+`);
+
+// Create `users` table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+  )
+`);
 
 module.exports = db;

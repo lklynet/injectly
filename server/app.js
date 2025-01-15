@@ -2,19 +2,184 @@ const express = require("express");
 const db = require("./database");
 const path = require("path");
 const child_process = require("child_process");
+const session = require("express-session");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 
+app.use(express.static(path.resolve(__dirname, "../public")));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "injectly_secret", // Use a secure secret
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      httpOnly: true, // Prevent JavaScript access to the cookie
+      sameSite: "lax", // Prevent CSRF in cross-site requests
+    },
+  })
+);
+
 app.use((req, res, next) => {
-  if (req.path === "/" && req.accepts("html")) {
-    next(); // Skip static middleware for "/"
-  } else {
-    express.static("public")(req, res, next);
+  // Redirect to /setup if no credentials exist and not accessing /setup or static files
+  if (!credentialsExist() && req.path !== "/setup" && !req.path.startsWith("/public")) {
+    return res.redirect("/setup");
+  }
+
+  // Redirect to /login if credentials exist, user is not logged in, and not accessing login or setup
+  if (credentialsExist() && !req.session.user && req.path !== "/login" && req.path !== "/setup") {
+    return res.redirect("/login");
+  }
+
+  // Prevent accessing /setup after credentials are set
+  if (credentialsExist() && req.path === "/setup") {
+    return res.redirect("/login");
+  }
+
+  // Handle specific cases like blocking /index.html access
+  if (req.path === "/index.html") {
+    return res.status(404).send("Not Found");
+  }
+
+  next();
+});
+
+
+app.get("/scripts.js", (req, res) => {
+  res.type("application/javascript");
+  res.sendFile(path.join(__dirname, "public/scripts.js"));
+});
+
+app.get("/login", (req, res) => {
+  if (req.session.user) {
+    return res.redirect("/"); // Redirect logged-in users to the app
+  }
+  res.render("login"); // Render the login.ejs template
+});
+
+// Authentication Middleware
+const isAuthenticated = (req, res, next) => {
+  if (req.session.user) {
+    return next();
+  }
+  res.status(401).send("Unauthorized: Please log in.");
+};
+
+app.post("/admin", (req, res) => {
+  const { username, password, confirmPassword } = req.body;
+
+  if (!username || !password || !confirmPassword) {
+    return res.status(400).json({ success: false, message: "All fields are required." });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ success: false, message: "Passwords do not match." });
+  }
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  try {
+    db.prepare("UPDATE users SET username = ?, password = ? WHERE username = ?")
+      .run(username, hashedPassword, req.session.user.username);
+    req.session.destroy();
+    res.json({ success: true, message: "Credentials updated. Please log in again." });
+  } catch (error) {
+    console.error("Error updating admin credentials:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update credentials." });
   }
 });
+
+// Login Route
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+
+  if (user && bcrypt.compareSync(password, user.password)) {
+    req.session.user = { username: user.username };
+    return res.json({ success: true, redirect: "/" });
+  }
+
+  res.status(401).json({ success: false, message: "Invalid credentials." });
+});
+
+// Helper to check if credentials exist in the database
+const credentialsExist = () => {
+  const user = db.prepare("SELECT * FROM users LIMIT 1").get();
+  return !!user; // Returns true if a user exists, false otherwise
+};
+
+
+
+app.get("/setup", (req, res) => {
+  res.render("setup");
+});
+
+app.post("/setup", (req, res) => {
+  const { username, password, confirmPassword } = req.body;
+
+  if (!username || !password || !confirmPassword) {
+    return res.status(400).json({ success: false, message: "All fields are required." });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ success: false, message: "Passwords do not match." });
+  }
+
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  try {
+    db.prepare("INSERT INTO users (username, password) VALUES (?, ?)").run(username, hashedPassword);
+    res.json({ success: true, message: "Credentials set successfully." });
+  } catch (error) {
+    console.error("Error saving credentials:", error.message);
+    res.status(500).json({ success: false, message: "Failed to save credentials." });
+  }
+});
+
+app.get("/", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  res.render("index", { injectScriptURL: "/inject.js" });
+});
+
+app.post("/update-credentials", isAuthenticated, async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: "Username and password are required." });
+  }
+
+  try {
+    // Update the username and password in the USERS array
+    USERS[0].username = username; // Update username
+    USERS[0].password = bcrypt.hashSync(password, 10); // Hash and update password
+
+    res.json({ success: true, message: "Credentials updated successfully!" });
+  } catch (error) {
+    console.error("Error updating credentials:", error.message);
+    res.status(500).json({ success: false, message: "Failed to update credentials." });
+  }
+});
+
+// Logout route
+app.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).send("Logout failed.");
+    }
+    res.json({ success: true, message: "Logged out successfully." });
+  });
+});
+
+// Apply authentication middleware to protected routes
+app.use("/scripts", isAuthenticated);
+app.use("/sites", isAuthenticated);
 
 // Set up EJS
 app.set("view engine", "ejs");

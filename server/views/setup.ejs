@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Credentials</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center">
+  <form id="setupForm" class="bg-gray-800 p-6 rounded shadow w-full max-w-sm">
+    <div class="flex justify-center mb-6">
+        <svg width="75" height="75" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="--main-color:#4759e1; --secondary-color:#26103c;">
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:var(--main-color);stop-opacity:1" />
+              <stop offset="100%" style="stop-color:var(--secondary-color);stop-opacity:1" />
+            </linearGradient>
+            <radialGradient id="inner-shading" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" style="stop-color:black; stop-opacity:0.1" />
+              <stop offset="100%" style="stop-color:black; stop-opacity:0" />
+            </radialGradient>
+            <pattern id="texture" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+              <circle cx="1" cy="1" r="0.6" fill="black" opacity="0.1" />
+              <circle cx="3" cy="2" r="0.6" fill="black" opacity="0.1" />
+              <circle cx="4" cy="4" r="0.6" fill="black" opacity="0.1" />
+              <circle cx="2" cy="3" r="0.6" fill="black" opacity="0.1" />
+            </pattern>
+          </defs>
+          <circle cx="60" cy="60" r="30" fill="url(#gradient)">
+            <animate
+              attributeName="r"
+              values="30;35;30"
+              dur="3s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+            <animate
+              attributeName="cx"
+              values="60;62;60"
+              dur="4s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+          </circle>
+          <circle cx="60" cy="60" r="30" fill="url(#inner-shading)">
+            <animate
+              attributeName="r"
+              values="30;35;30"
+              dur="3s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+            <animate
+              attributeName="cx"
+              values="60;62;60"
+              dur="4s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+          </circle>
+          <circle cx="60" cy="60" r="30" fill="url(#texture)" opacity="0.5">
+            <animate
+              attributeName="r"
+              values="30;35;30"
+              dur="3s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+            <animate
+              attributeName="cx"
+              values="60;62;60"
+              dur="4s"
+              repeatCount="indefinite"
+              keyTimes="0;0.5;1"
+              keySplines="0.25 0.1 0.25 1; 0.25 0.1 0.25 1"
+              calcMode="spline"
+            />
+          </circle>
+        </svg>
+      </div>
+    <h1 class="text-2xl font-bold mb-4 text-center">
+        Setup Credentials</h1>
+    <label for="username" class="block mb-2">Username</label>
+    <input type="text" id="username" name="username" class="w-full p-2 mb-4 rounded bg-gray-700 text-gray-100" required>
+    <label for="password" class="block mb-2">Password</label>
+    <input type="password" id="password" name="password" class="w-full p-2 mb-4 rounded bg-gray-700 text-gray-100" required>
+    <label for="confirmPassword" class="block mb-2">Confirm Password</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" class="w-full p-2 mb-4 rounded bg-gray-700 text-gray-100" required>
+    <button type="submit" class="bg-blue-500 w-full p-2 rounded text-white hover:bg-blue-600">Set Credentials</button>
+    <p id="error" class="text-red-500 mt-4 hidden">Failed to set credentials.</p>
+  </form>
+  <script>
+    document.getElementById("setupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      const res = await fetch("/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, confirmPassword }),
+      });
+
+      if (res.ok) {
+        alert("Credentials set. Please log in.");
+        window.location.href = "/login";
+      } else {
+        document.getElementById("error").classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
