@@ -26,12 +26,17 @@ app.use(
 );
 
 app.use((req, res, next) => {
+  // Allow public access to /inject.js without authentication
+  if (req.path === "/inject.js") {
+    return next();
+  }
+
   // Redirect to /setup if no credentials exist and not accessing /setup or static files
   if (!credentialsExist() && req.path !== "/setup" && !req.path.startsWith("/public")) {
     return res.redirect("/setup");
   }
 
-  // Redirect to /login if credentials exist, user is not logged in, and not accessing login or setup
+  // Redirect to /login if credentials exist, user is not logged in, and not accessing /login or /setup
   if (credentialsExist() && !req.session.user && req.path !== "/login" && req.path !== "/setup") {
     return res.redirect("/login");
   }
