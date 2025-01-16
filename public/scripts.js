@@ -213,6 +213,45 @@ const fetchAndRenderScripts = async () => {
   // Inject external scripts with attributes
   const externalScripts = scripts.filter((script) => script.src);
   injectDynamicScripts(externalScripts);
+
+  // [New domain-based code starts here]
+  // 3) FILTER SCRIPTS BY DOMAIN FOR INJECTION
+  const currentDomain = window.location.hostname;
+  const domainSpecificScripts = scripts.filter((script) => {
+    const assignedSites = script.assignedSites || [];
+    return assignedSites.some((site) => site.domain === currentDomain);
+  });
+
+  // 4) DOMAIN-BASED INLINE INJECTION
+  const inlineScripts = domainSpecificScripts.filter(
+    (script) => script.content && !script.src
+  );
+  inlineScripts.forEach((script) => {
+    if (script.content.startsWith("<script")) {
+      try {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = script.content.trim();
+        const scriptElement = tempDiv.firstChild;
+        document.head.appendChild(scriptElement);
+      } catch (error) {
+        console.error("Error injecting inline script:", error);
+      }
+    } else if (
+      script.content.startsWith("(function()") &&
+      script.content.endsWith("})();")
+    ) {
+      try {
+        eval(script.content);
+      } catch (error) {
+        console.error("Error evaluating IIFE script:", error);
+      }
+    }
+  });
+
+  // 5) DOMAIN-BASED EXTERNAL INJECTION
+  const domainExternalScripts = domainSpecificScripts.filter((script) => script.src);
+  injectDynamicScripts(domainExternalScripts);
+
 };
 
   siteGrid.addEventListener("click", async (e) => {
@@ -317,3 +356,4 @@ const fetchAndRenderScripts = async () => {
   fetchAndRenderScripts();
   fetchAndRenderSites();
 });
+
