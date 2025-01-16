@@ -14,46 +14,49 @@ app.use(express.static(path.resolve(__dirname, "../public")));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "injectly_secret", // Use a secure secret
+    secret: process.env.SESSION_SECRET || "injectly_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      httpOnly: true, // Prevent JavaScript access to the cookie
-      sameSite: "lax", // Prevent CSRF in cross-site requests
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
     },
   })
 );
 
 app.use((req, res, next) => {
-  // Allow public access to /inject.js without authentication
   if (req.path === "/inject.js") {
     return next();
   }
 
-  // Redirect to /setup if no credentials exist and not accessing /setup or static files
-  if (!credentialsExist() && req.path !== "/setup" && !req.path.startsWith("/public")) {
+  if (
+    !credentialsExist() &&
+    req.path !== "/setup" &&
+    !req.path.startsWith("/public")
+  ) {
     return res.redirect("/setup");
   }
 
-  // Redirect to /login if credentials exist, user is not logged in, and not accessing /login or /setup
-  if (credentialsExist() && !req.session.user && req.path !== "/login" && req.path !== "/setup") {
+  if (
+    credentialsExist() &&
+    !req.session.user &&
+    req.path !== "/login" &&
+    req.path !== "/setup"
+  ) {
     return res.redirect("/login");
   }
 
-  // Prevent accessing /setup after credentials are set
   if (credentialsExist() && req.path === "/setup") {
     return res.redirect("/login");
   }
 
-  // Handle specific cases like blocking /index.html access
   if (req.path === "/index.html") {
     return res.status(404).send("Not Found");
   }
 
   next();
 });
-
 
 app.get("/scripts.js", (req, res) => {
   res.type("application/javascript");
@@ -62,12 +65,11 @@ app.get("/scripts.js", (req, res) => {
 
 app.get("/login", (req, res) => {
   if (req.session.user) {
-    return res.redirect("/"); // Redirect logged-in users to the app
+    return res.redirect("/");
   }
-  res.render("login"); // Render the login.ejs template
+  res.render("login");
 });
 
-// Authentication Middleware
 const isAuthenticated = (req, res, next) => {
   if (req.session.user) {
     return next();
@@ -79,30 +81,41 @@ app.post("/admin", (req, res) => {
   const { username, password, confirmPassword } = req.body;
 
   if (!username || !password || !confirmPassword) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required." });
   }
 
   if (password !== confirmPassword) {
-    return res.status(400).json({ success: false, message: "Passwords do not match." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords do not match." });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   try {
-    db.prepare("UPDATE users SET username = ?, password = ? WHERE username = ?")
-      .run(username, hashedPassword, req.session.user.username);
+    db.prepare(
+      "UPDATE users SET username = ?, password = ? WHERE username = ?"
+    ).run(username, hashedPassword, req.session.user.username);
     req.session.destroy();
-    res.json({ success: true, message: "Credentials updated. Please log in again." });
+    res.json({
+      success: true,
+      message: "Credentials updated. Please log in again.",
+    });
   } catch (error) {
     console.error("Error updating admin credentials:", error.message);
-    res.status(500).json({ success: false, message: "Failed to update credentials." });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update credentials." });
   }
 });
 
-// Login Route
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+  const user = db
+    .prepare("SELECT * FROM users WHERE username = ?")
+    .get(username);
 
   if (user && bcrypt.compareSync(password, user.password)) {
     req.session.user = { username: user.username };
@@ -112,13 +125,10 @@ app.post("/login", (req, res) => {
   res.status(401).json({ success: false, message: "Invalid credentials." });
 });
 
-// Helper to check if credentials exist in the database
 const credentialsExist = () => {
   const user = db.prepare("SELECT * FROM users LIMIT 1").get();
-  return !!user; // Returns true if a user exists, false otherwise
+  return !!user;
 };
-
-
 
 app.get("/setup", (req, res) => {
   res.render("setup");
@@ -128,21 +138,30 @@ app.post("/setup", (req, res) => {
   const { username, password, confirmPassword } = req.body;
 
   if (!username || !password || !confirmPassword) {
-    return res.status(400).json({ success: false, message: "All fields are required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required." });
   }
 
   if (password !== confirmPassword) {
-    return res.status(400).json({ success: false, message: "Passwords do not match." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Passwords do not match." });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   try {
-    db.prepare("INSERT INTO users (username, password) VALUES (?, ?)").run(username, hashedPassword);
+    db.prepare("INSERT INTO users (username, password) VALUES (?, ?)").run(
+      username,
+      hashedPassword
+    );
     res.json({ success: true, message: "Credentials set successfully." });
   } catch (error) {
     console.error("Error saving credentials:", error.message);
-    res.status(500).json({ success: false, message: "Failed to save credentials." });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to save credentials." });
   }
 });
 
@@ -159,7 +178,9 @@ app.post("/update-credentials", isAuthenticated, async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ success: false, message: "Username and password are required." });
+    return res
+      .status(400)
+      .json({ success: false, message: "Username and password are required." });
   }
 
   try {
@@ -170,7 +191,9 @@ app.post("/update-credentials", isAuthenticated, async (req, res) => {
     res.json({ success: true, message: "Credentials updated successfully!" });
   } catch (error) {
     console.error("Error updating credentials:", error.message);
-    res.status(500).json({ success: false, message: "Failed to update credentials." });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to update credentials." });
   }
 });
 
@@ -318,7 +341,6 @@ app.delete("/sites/:id", (req, res) => {
   }
 });
 
-// Serve the dynamic injector script
 app.get("/inject.js", (req, res) => {
   const referer = req.headers.referer;
   const siteDomain = req.query.site || (referer && new URL(referer).host);
@@ -327,7 +349,7 @@ app.get("/inject.js", (req, res) => {
     return res.status(400).send("Site domain not provided.");
   }
 
-  // Check for exact or wildcard match in the database
+  // Check for site existence
   const site = db
     .prepare(
       `
@@ -342,7 +364,7 @@ app.get("/inject.js", (req, res) => {
     return res.status(404).send(`Site ${siteDomain} not registered.`);
   }
 
-  // Fetch scripts assigned to the site
+  // Fetch assigned scripts
   const scripts = db
     .prepare(
       `
@@ -354,28 +376,71 @@ app.get("/inject.js", (req, res) => {
     )
     .all(site.id);
 
+  if (scripts.length === 0) {
+    return res.type("application/javascript").send(`
+      console.log('Injectly: No scripts to inject for ${siteDomain}');
+    `);
+  }
+
   // Construct the injector script
   const processedScripts = scripts
     .map((script) => {
       const content = script.content.trim();
+
       if (content.startsWith("<script")) {
-        return `
-          (function() {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = \`${content}\`;
-            const scriptTag = tempDiv.firstChild;
-            document.head.appendChild(scriptTag);
-          })();
-        `;
-      } else if (
-        content.startsWith("(function()") &&
-        content.endsWith("})();")
-      ) {
-        return content; // Inline IIFE
+        // Handle <script> tags
+        const srcMatch = content.match(/src="([^"]+)"/);
+        if (srcMatch) {
+          // External <script> tag with src
+          const src = srcMatch[1];
+          return `
+            (function() {
+              const scriptTag = document.createElement('script');
+              scriptTag.src = '${src}';
+              scriptTag.defer = ${content.includes("defer")};
+              ${
+                content.includes("data-website-id")
+                  ? `scriptTag.setAttribute('data-website-id', '${
+                      content.match(/data-website-id="([^"]+)"/)[1]
+                    }');`
+                  : ""
+              }
+              scriptTag.setAttribute('data-injectly', 'true'); // Optional: for debugging
+              document.head.appendChild(scriptTag);
+              console.log('Injectly: Added external script ->', scriptTag.src);
+            })();
+          `;
+        } else {
+          // Inline <script> tag without src
+          const inlineCodeMatch = content.match(
+            /<script.*?>([\s\S]*?)<\/script>/
+          );
+          const inlineCode = inlineCodeMatch ? inlineCodeMatch[1].trim() : "";
+          return `
+            (function() {
+              const inlineScript = document.createElement('script');
+              inlineScript.textContent = \`${inlineCode.replace(
+                /<\/script>/g,
+                "<\\/script>"
+              )}\`;
+              inlineScript.setAttribute('data-injectly', 'true'); // Optional: for debugging
+              document.head.appendChild(inlineScript);
+              console.log('Injectly: Added inline script.');
+            })();
+          `;
+        }
       } else {
+        // Handle inline JavaScript (not enclosed in <script> tags)
         return `
           (function() {
-            ${content}
+            const inlineScript = document.createElement('script');
+            inlineScript.textContent = \`${content.replace(
+              /<\/script>/g,
+              "<\\/script>"
+            )}\`;
+            inlineScript.setAttribute('data-injectly', 'true'); // Optional: for debugging
+            document.head.appendChild(inlineScript);
+            console.log('Injectly: Added inline script.');
           })();
         `;
       }
@@ -384,6 +449,17 @@ app.get("/inject.js", (req, res) => {
 
   const injectorScript = `
     (function() {
+      function injectScript(src) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = src;
+          script.defer = true;
+          script.addEventListener('load', resolve);
+          script.addEventListener('error', (e) => reject(e.error));
+          document.head.appendChild(script);
+        });
+      }
+
       console.log('Injectly: Loading scripts for ${siteDomain}...');
       document.addEventListener('DOMContentLoaded', function() {
         try {
