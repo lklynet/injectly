@@ -102,6 +102,34 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/scripts/:id/calls", (req, res) => {
+  const { id } = req.params;
+  const { range = "24h" } = req.query; // Default to 24-hour range
+
+  // Fetch call data from database
+  const calls = db
+    .prepare(
+      `
+      SELECT strftime('%H', timestamp) AS hour, COUNT(*) AS call_count
+      FROM script_calls
+      WHERE script_id = ? AND timestamp >= datetime('now', '-1 day')
+      GROUP BY hour
+    `
+    )
+    .all(id);
+
+  // Format data for the graph
+  const graphData = Array(24).fill(0); // 24 hours
+  calls.forEach(({ hour, call_count }) => {
+    graphData[parseInt(hour)] = call_count;
+  });
+
+  // Calculate total calls in the last 24 hours
+  const callCount = graphData.reduce((sum, count) => sum + count, 0);
+
+  res.json({ graphData, callCount });
+});
+
 /********************************************
  *          Auth & Credential Routes
  ********************************************/
@@ -122,14 +150,18 @@ app.get("/login", (req, res) => {
  */
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+  const user = db
+    .prepare("SELECT * FROM users WHERE username = ?")
+    .get(username);
 
   if (user && bcrypt.compareSync(password, user.password)) {
     req.session.user = { username: user.username };
     return res.json({ success: true, redirect: "/" });
   }
 
-  return res.status(401).json({ success: false, message: "Invalid credentials." });
+  return res
+    .status(401)
+    .json({ success: false, message: "Invalid credentials." });
 });
 
 /**
@@ -180,7 +212,10 @@ app.post("/setup", (req, res) => {
       username,
       hashedPassword
     );
-    return res.json({ success: true, message: "Credentials set successfully." });
+    return res.json({
+      success: true,
+      message: "Credentials set successfully.",
+    });
   } catch (error) {
     console.error("Error saving credentials:", error.message);
     return res
@@ -211,8 +246,9 @@ app.post("/admin", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   try {
-    db.prepare("UPDATE users SET username = ?, password = ? WHERE username = ?")
-      .run(username, hashedPassword, req.session.user.username);
+    db.prepare(
+      "UPDATE users SET username = ?, password = ? WHERE username = ?"
+    ).run(username, hashedPassword, req.session.user.username);
     req.session.destroy();
     return res.json({
       success: true,
@@ -249,7 +285,10 @@ app.post("/update-credentials", isAuthenticated, async (req, res) => {
     // Or update DB user here, similarly to the /admin route:
     // db.prepare("UPDATE users ...")
 
-    return res.json({ success: true, message: "Credentials updated successfully!" });
+    return res.json({
+      success: true,
+      message: "Credentials updated successfully!",
+    });
   } catch (error) {
     console.error("Error updating credentials:", error.message);
     return res
@@ -396,7 +435,9 @@ app.use("/sites", isAuthenticated);
 app.post("/sites", (req, res) => {
   const { domain } = req.body;
   try {
-    const result = db.prepare("INSERT INTO sites (domain) VALUES (?)").run(domain);
+    const result = db
+      .prepare("INSERT INTO sites (domain) VALUES (?)")
+      .run(domain);
     res.json({ id: result.lastInsertRowid, domain });
   } catch (error) {
     res.status(400).json({ error: "Domain already exists or invalid." });
@@ -461,6 +502,49 @@ app.post("/scripts/:id/sites", (req, res) => {
 });
 
 /********************************************
+ *              Script Calls
+ ********************************************/
+app.get("/api/calls", (req, res) => {
+  try {
+    // SQL to fetch call counts for the last 24 hours
+    const calls = db
+      .prepare(
+        `
+        SELECT 
+          scripts.id AS script_id,
+          scripts.name AS script_name,
+          COUNT(script_calls.id) AS call_count
+        FROM 
+          scripts
+        LEFT JOIN 
+          script_calls 
+        ON 
+          scripts.id = script_calls.script_id
+        WHERE 
+          script_calls.timestamp >= DATETIME('now', '-1 day')
+        GROUP BY 
+          scripts.id
+        `
+      )
+      .all();
+
+    // Format response
+    const response = calls.map((call) => ({
+      id: call.script_id,
+      name: call.script_name,
+      count: call.call_count,
+    }));
+
+    res.json({ success: true, data: response });
+  } catch (error) {
+    console.error("Error fetching call data:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch call data." });
+  }
+});
+
+/********************************************
  *              Inject Route
  ********************************************/
 app.get("/inject.js", (req, res) => {
@@ -484,12 +568,55 @@ app.get("/inject.js", (req, res) => {
     // Prevent caching so the loader always runs fresh
     res.set({
       "Cache-Control": "no-cache, no-store, must-revalidate",
-      "Pragma": "no-cache",
-      "Expires": "0",
+      Pragma: "no-cache",
+      Expires: "0",
     });
 
     return res.type("application/javascript").send(loaderScript);
   }
+
+  // API endpoint to fetch call data for a specific script
+  app.get("/api/calls/:scriptId", (req, res) => {
+    const { scriptId } = req.params;
+
+    try {
+      // Query to get call count in the last 24 hours
+      const callCount = db
+        .prepare(
+          `
+        SELECT COUNT(*) AS count 
+        FROM script_calls 
+        WHERE script_id = ? AND timestamp >= DATETIME('now', '-1 day')
+      `
+        )
+        .get(scriptId);
+
+      // Query to get timestamps for a basic graph (grouped by hour)
+      const callData = db
+        .prepare(
+          `
+        SELECT STRFTIME('%H', timestamp) AS hour, COUNT(*) AS count
+        FROM script_calls
+        WHERE script_id = ? AND timestamp >= DATETIME('now', '-1 day')
+        GROUP BY hour
+        ORDER BY hour
+      `
+        )
+        .all(scriptId);
+
+      // Return data to the frontend
+      res.json({
+        success: true,
+        count: callCount.count,
+        graphData: callData,
+      });
+    } catch (error) {
+      console.error("Error fetching call data:", error.message);
+      res
+        .status(500)
+        .json({ success: false, error: "Failed to fetch call data." });
+    }
+  });
 
   // --------------------------------------------------------------
   // If we DO have ?site=, serve your existing injection logic below
@@ -517,12 +644,14 @@ app.get("/inject.js", (req, res) => {
 
   // Fetch assigned scripts for this site
   const scripts = db
-    .prepare(`
-      SELECT scripts.content 
+    .prepare(
+      `
+      SELECT scripts.id, scripts.content 
       FROM scripts 
       JOIN script_sites ON scripts.id = script_sites.script_id 
       WHERE script_sites.site_id = ?
-    `)
+    `
+    )
     .all(site.id);
 
   // If no scripts assigned, return a message
@@ -530,6 +659,23 @@ app.get("/inject.js", (req, res) => {
     return res.type("application/javascript").send(`
       console.log('Injectly: No scripts to inject for ${siteDomain}');
     `);
+  }
+
+  // Log each script call in the `script_calls` table
+  // Log each script call in the `script_calls` table (only if ?site is present)
+  if (req.query.site) {
+    scripts.forEach((script) => {
+      if (script.id) {
+        console.log("Attempting to log call for script ID:", script.id);
+        db.prepare(
+          `
+        INSERT INTO script_calls (script_id) VALUES (?)
+      `
+        ).run(script.id);
+      } else {
+        console.error("Error: Missing script ID for script:", script);
+      }
+    });
   }
 
   // Construct the final injector script
@@ -597,7 +743,7 @@ app.get("/inject.js", (req, res) => {
     })
     .join("\n");
 
-    const injectorScript = `
+  const injectorScript = `
     (function() {
       function injectScript(src) {
         return new Promise((resolve, reject) => {
@@ -623,8 +769,8 @@ app.get("/inject.js", (req, res) => {
   // Prevent caching
   res.set({
     "Cache-Control": "no-cache, no-store, must-revalidate",
-    "Pragma": "no-cache",
-    "Expires": "0",
+    Pragma: "no-cache",
+    Expires: "0",
   });
 
   res.type("application/javascript");

@@ -41,4 +41,14 @@ db.exec(`
   )
 `);
 
+// Create the `script_calls` table for logging script activity
+db.exec(`
+  CREATE TABLE IF NOT EXISTS script_calls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    script_id INTEGER NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (script_id) REFERENCES scripts(id) ON DELETE CASCADE
+  )
+`);
+
 module.exports = db;

@@ -1,25 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
   const COLORS = {
-    1: "bg-red-500",
-    2: "bg-blue-500",
-    3: "bg-green-500",
-    4: "bg-yellow-500",
-    5: "bg-purple-500",
-    6: "bg-pink-500",
-    7: "bg-orange-500",
-    8: "bg-teal-500",
-    9: "bg-cyan-500",
-    10: "bg-amber-500",
-    11: "bg-red-300",     // Lighter red
-    12: "bg-blue-300",    // Lighter blue
-    13: "bg-green-300",   // Lighter green
-    14: "bg-yellow-300",  // Lighter yellow
-    15: "bg-purple-300",  // Lighter purple
-    16: "bg-pink-300",    // Lighter pink
-    17: "bg-orange-300",  // Lighter orange
-    18: "bg-teal-300",    // Lighter teal
-    19: "bg-cyan-300",    // Lighter cyan
-    20: "bg-amber-300",   // Lighter amber
+    1: "bg-red-600", // Closest to #e6194B
+    2: "bg-green-500", // Closest to #3cb44b
+    3: "bg-yellow-400", // Closest to #ffe119
+    4: "bg-blue-600", // Closest to #4363d8
+    5: "bg-orange-500", // Closest to #f58231
+    6: "bg-purple-700", // Closest to #911eb4
+    7: "bg-cyan-400", // Closest to #42d4f4
+    8: "bg-pink-500", // Closest to #f032e6
+    9: "bg-lime-400", // Closest to #bfef45
+    10: "bg-pink-200", // Closest to #fabed4
+    11: "bg-teal-500", // Closest to #469990
+    12: "bg-purple-300", // Closest to #dcbeff
+    13: "bg-orange-800", // Closest to #9A6324
+    14: "bg-yellow-200", // Closest to #fffac8
+    15: "bg-red-900", // Closest to #800000
+    16: "bg-green-200", // Closest to #aaffc3
+    17: "bg-yellow-800", // Closest to #808000
+    18: "bg-orange-200", // Closest to #ffd8b1
+    19: "bg-blue-900", // Closest to #000075
+    20: "bg-gray-500", // Closest to #a9a9a9
   };
 
   const scriptCards = document.getElementById("scriptCards");
@@ -114,145 +114,216 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   };
 
-// Function to dynamically inject scripts
-const injectDynamicScripts = (scripts) => {
-  scripts.forEach((script) => {
-    try {
-      const scriptElement = document.createElement("script");
-      scriptElement.src = script.src;
-
-      // Add custom attributes to the script element
-      if (script.attributes) {
-        Object.entries(script.attributes).forEach(([key, value]) => {
-          scriptElement.setAttribute(key, value);
-        });
-      }
-
-      // Append the script to the document head
-      document.head.appendChild(scriptElement);
-      console.log(`Injected script: ${script.src}`);
-    } catch (error) {
-      console.error("Error injecting script:", error);
-    }
-  });
-};
-
-// Fetch and render scripts
-const fetchAndRenderScripts = async () => {
-  const res = await fetch("/scripts");
-  const scripts = await res.json();
-
-  scriptCards.innerHTML = scripts
-    .map((script) => {
-      const assignedSites = script.assignedSites || []; // Assigned sites from backend
-      const siteFlags = assignedSites
-        .map((site) => {
-          // Ensure consistent color assignment using site ID
-          const colorClass =
-            COLORS[site.id % Object.keys(COLORS).length] || "bg-gray-500";
-          return `<div class="w-4 h-4 ${colorClass} rounded-full" title="${site.domain}"></div>`;
-        })
-        .join("");
-
-      return `
-        <div class="p-4 bg-gray-800 rounded shadow">
-          <h3 class="text-lg font-semibold text-white">${script.name}</h3>
-          <p class="text-sm text-gray-400">Added: ${new Date(
-            script.created_at
-          ).toLocaleDateString()}</p>
-          <p class="text-sm text-gray-400">Updated: ${new Date(
-            script.updated_at
-          ).toLocaleDateString()}</p>
-          <div class="flex gap-2 mt-2">${siteFlags}</div>
-          <button class="edit mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${
-            script.id
-          }">
-            Edit
-          </button>
-          <button class="delete mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${
-            script.id
-          }">
-            Delete
-          </button>
-        </div>
-      `;
-    })
-    .join("");
-
-  // Dynamically inject scripts
-  const dynamicScripts = scripts
-    .filter((script) => script.content && !script.src)
-    .map((script) => ({
-      src: script.src || null,
-      content: script.content,
-    }));
-
-  dynamicScripts.forEach((script) => {
-    if (script.content && script.content.startsWith("<script")) {
+  // Function to dynamically inject scripts
+  const injectDynamicScripts = (scripts) => {
+    scripts.forEach((script) => {
       try {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = script.content.trim();
-        const scriptElement = tempDiv.firstChild;
+        const scriptElement = document.createElement("script");
+        scriptElement.src = script.src;
+
+        // Add custom attributes to the script element
+        if (script.attributes) {
+          Object.entries(script.attributes).forEach(([key, value]) => {
+            scriptElement.setAttribute(key, value);
+          });
+        }
+
+        // Append the script to the document head
         document.head.appendChild(scriptElement);
+        console.log(`Injected script: ${script.src}`);
       } catch (error) {
-        console.error("Error injecting inline script:", error);
+        console.error("Error injecting script:", error);
       }
-    } else if (
-      script.content &&
-      script.content.startsWith("(function()") &&
-      script.content.endsWith("})();")
-    ) {
-      try {
-        eval(script.content); // Safely execute inline IIFE scripts
-      } catch (error) {
-        console.error("Error evaluating IIFE script:", error);
+    });
+  };
+
+  // Fetch and render scripts
+  // Fetch and render scripts
+  const fetchAndRenderScripts = async () => {
+    const res = await fetch("/scripts");
+    const scripts = await res.json();
+
+    scriptCards.innerHTML = scripts
+      .map((script) => {
+        const assignedSites = script.assignedSites || []; // Assigned sites from backend
+        const siteFlags = assignedSites
+          .map((site) => {
+            const colorClass =
+              COLORS[site.id % Object.keys(COLORS).length] || "bg-gray-500";
+            return `<div class="w-4 h-4 ${colorClass} rounded-full" title="${site.domain}"></div>`;
+          })
+          .join("");
+
+        return `
+      <div class="p-4 bg-gray-800 rounded shadow">
+  <!-- Title and Ellipses -->
+  <div class="flex justify-between items-center">
+    <h3 class="text-lg font-semibold text-white">${script.name}</h3>
+    <div class="script-options relative">
+      <button
+        class="ellipsis-menu text-gray-400 hover:text-gray-200"
+        onclick="showOptions(${script.id})"
+      >
+        ⋮
+      </button>
+      <div
+        id="options-${script.id}"
+        class="options-popup hidden absolute right-0 bg-gray-700 p-2 rounded shadow"
+      >
+        <button
+          class="block px-4 py-2 text-left text-sm text-gray-300 hover:text-gray-100"
+          onclick="editScript(${script.id})"
+        >
+          Edit
+        </button>
+        <button
+          class="block px-4 py-2 text-left text-sm text-gray-300 hover:text-gray-100"
+          onclick="deleteScript(${script.id})"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Flags -->
+  <div class="flex gap-2 mt-2">${siteFlags}</div>
+
+  <!-- Graph -->
+  <div id="graph-${script.id}" class="graph-container bg-gray-800 rounded h-24 my-2"></div>
+
+  <!-- Call Count -->
+  <p id="call-count-${script.id}" class="text-sm text-gray-400">
+    Loading call data...
+  </p>
+</div>
+    `;
+      })
+      .join("");
+
+    // Call graph and call count renderers here
+    scripts.forEach((script) => {
+      fetchAndRenderGraph(script.id);
+      fetchAndRenderCallCount(script.id);
+    });
+
+    // Dynamically inject scripts
+    const dynamicScripts = scripts
+      .filter((script) => script.content && !script.src)
+      .map((script) => ({
+        src: script.src || null,
+        content: script.content,
+      }));
+
+    dynamicScripts.forEach((script) => {
+      if (script.content && script.content.startsWith("<script")) {
+        try {
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = script.content.trim();
+          const scriptElement = tempDiv.firstChild;
+          document.head.appendChild(scriptElement);
+        } catch (error) {
+          console.error("Error injecting inline script:", error);
+        }
+      } else if (
+        script.content &&
+        script.content.startsWith("(function()") &&
+        script.content.endsWith("})();")
+      ) {
+        try {
+          eval(script.content); // Safely execute inline IIFE scripts
+        } catch (error) {
+          console.error("Error evaluating IIFE script:", error);
+        }
       }
-    }
-  });
+    });
 
-  // Inject external scripts with attributes
-  const externalScripts = scripts.filter((script) => script.src);
-  injectDynamicScripts(externalScripts);
+    // Ellipsis Menu
+    let activeMenu = null; // Track the currently active menu
 
-  // [New domain-based code starts here]
-  // 3) FILTER SCRIPTS BY DOMAIN FOR INJECTION
-  const currentDomain = window.location.hostname;
-  const domainSpecificScripts = scripts.filter((script) => {
-    const assignedSites = script.assignedSites || [];
-    return assignedSites.some((site) => site.domain === currentDomain);
-  });
+    // Function to toggle the visibility of the options menu
+    window.showOptions = (scriptId) => {
+      const optionsMenu = document.getElementById(`options-${scriptId}`);
 
-  // 4) DOMAIN-BASED INLINE INJECTION
-  const inlineScripts = domainSpecificScripts.filter(
-    (script) => script.content && !script.src
-  );
-  inlineScripts.forEach((script) => {
-    if (script.content.startsWith("<script")) {
-      try {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = script.content.trim();
-        const scriptElement = tempDiv.firstChild;
-        document.head.appendChild(scriptElement);
-      } catch (error) {
-        console.error("Error injecting inline script:", error);
+      // Close any currently active menu if it's not the same
+      if (activeMenu && activeMenu !== optionsMenu) {
+        activeMenu.classList.add("hidden");
       }
-    } else if (
-      script.content.startsWith("(function()") &&
-      script.content.endsWith("})();")
-    ) {
-      try {
-        eval(script.content);
-      } catch (error) {
-        console.error("Error evaluating IIFE script:", error);
+
+      // Toggle the visibility of the clicked menu
+      optionsMenu.classList.toggle("hidden");
+
+      // Update the active menu reference
+      activeMenu = optionsMenu.classList.contains("hidden")
+        ? null
+        : optionsMenu;
+    };
+
+    // Global click listener to close the menu when clicking outside
+    document.addEventListener("click", (event) => {
+      // If there's an active menu, check if the click is outside it
+      if (activeMenu) {
+        const isMenuClick = activeMenu.contains(event.target);
+        const isEllipsisClick = event.target.closest(".ellipsis-menu") !== null;
+
+        if (!isMenuClick && !isEllipsisClick) {
+          activeMenu.classList.add("hidden");
+          activeMenu = null; // Reset active menu reference
+        }
       }
-    }
-  });
+    });
 
-  // 5) DOMAIN-BASED EXTERNAL INJECTION
-  const domainExternalScripts = domainSpecificScripts.filter((script) => script.src);
-  injectDynamicScripts(domainExternalScripts);
+    // Prevent menu from closing immediately after being toggled
+    document.querySelectorAll(".ellipsis-menu").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation(); // Prevent global click listener from firing
+      });
+    });
 
-};
+    // Inject external scripts with attributes
+    const externalScripts = scripts.filter((script) => script.src);
+    injectDynamicScripts(externalScripts);
+
+    // [New domain-based code starts here]
+    // 3) FILTER SCRIPTS BY DOMAIN FOR INJECTION
+    const currentDomain = window.location.hostname;
+    const domainSpecificScripts = scripts.filter((script) => {
+      const assignedSites = script.assignedSites || [];
+      return assignedSites.some((site) => site.domain === currentDomain);
+    });
+
+    // 4) DOMAIN-BASED INLINE INJECTION
+    const inlineScripts = domainSpecificScripts.filter(
+      (script) => script.content && !script.src
+    );
+    inlineScripts.forEach((script) => {
+      if (script.content.startsWith("<script")) {
+        try {
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = script.content.trim();
+          const scriptElement = tempDiv.firstChild;
+          document.head.appendChild(scriptElement);
+        } catch (error) {
+          console.error("Error injecting inline script:", error);
+        }
+      } else if (
+        script.content.startsWith("(function()") &&
+        script.content.endsWith("})();")
+      ) {
+        try {
+          eval(script.content);
+        } catch (error) {
+          console.error("Error evaluating IIFE script:", error);
+        }
+      }
+    });
+
+    // 5) DOMAIN-BASED EXTERNAL INJECTION
+    const domainExternalScripts = domainSpecificScripts.filter(
+      (script) => script.src
+    );
+    injectDynamicScripts(domainExternalScripts);
+  };
 
   siteGrid.addEventListener("click", async (e) => {
     const target = e.target;
@@ -291,6 +362,28 @@ const fetchAndRenderScripts = async () => {
   // Cancel Button
   cancelBtn.addEventListener("click", hideModal);
 
+  function editScript(scriptId) {
+    fetch(`/scripts/${scriptId}`)
+      .then((response) => response.json())
+      .then((script) => {
+        showModal("Edit Script", script);
+      })
+      .catch((error) => {
+        console.error(`Error fetching script with ID ${scriptId}:`, error);
+      });
+  }
+  window.editScript = editScript; // Attach to window
+
+  async function deleteScript(scriptId) {
+    try {
+      await fetch(`/scripts/${scriptId}`, { method: "DELETE" });
+      fetchAndRenderScripts(); // Refresh the scripts UI
+    } catch (error) {
+      console.error(`Error deleting script with ID ${scriptId}:`, error);
+    }
+  }
+  window.deleteScript = deleteScript; // Attach to window
+
   // Handle Edit and Delete Buttons
   scriptCards.addEventListener("click", async (e) => {
     const target = e.target;
@@ -305,6 +398,131 @@ const fetchAndRenderScripts = async () => {
       fetchAndRenderScripts();
     }
   });
+
+  // Fetch and render graph for a specific script
+  async function fetchAndRenderGraph(scriptId) {
+    try {
+      const response = await fetch(`/scripts/${scriptId}/calls?range=24h`);
+      const { graphData } = await response.json();
+
+      // Select the graph container
+      const graphContainer = document.getElementById(`graph-${scriptId}`);
+      graphContainer.innerHTML = ""; // Clear any existing content
+
+      // Graph dimensions and margins
+      const width = graphContainer.offsetWidth || 300; // Responsive width
+      const height = 80; // Fixed height
+      const margin = { top: 10, right: 10, bottom: 10, left: 10 };
+
+      const svg = d3
+        .select(graphContainer)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Add a defs element for the subtle glow effect
+      const defs = svg.append("defs");
+
+      // Subtle glow filter
+      defs
+        .append("filter")
+        .attr("id", "subtle-glow")
+        .append("feGaussianBlur")
+        .attr("stdDeviation", 3) // Reduced blur intensity
+        .attr("result", "coloredBlur");
+
+      const merge = defs.append("feMerge");
+      merge.append("feMergeNode").attr("in", "coloredBlur");
+      merge.append("feMergeNode").attr("in", "SourceGraphic");
+
+      // Gradient for the area below the line
+      const gradient = defs
+        .append("linearGradient")
+        .attr("id", "gradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+
+      gradient
+        .append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#4759e1")
+        .attr("stop-opacity", 0.3); // Subtle gradient opacity
+
+      gradient
+        .append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#4759e1")
+        .attr("stop-opacity", 0); // Fade to transparent
+
+      const xScale = d3
+        .scaleLinear()
+        .domain([0, graphData.length - 1])
+        .range([margin.left, width - margin.right]);
+
+      const yScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(graphData)])
+        .range([height - margin.bottom, margin.top]);
+
+      // Line generator
+      const line = d3
+        .line()
+        .x((d, i) => xScale(i))
+        .y((d) => yScale(d))
+        .curve(d3.curveMonotoneX); // Smooth curve
+
+      // Append area below the line with a subtle gradient
+      svg
+        .append("path")
+        .datum(graphData)
+        .attr("fill", "url(#gradient)")
+        .attr(
+          "d",
+          d3
+            .area()
+            .x((d, i) => xScale(i))
+            .y0(height - margin.bottom)
+            .y1((d) => yScale(d))
+            .curve(d3.curveMonotoneX)
+        );
+
+      svg
+        .append("path")
+        .datum(graphData)
+        .attr("fill", "none")
+        .attr("stroke", "#4759e1") // Main line color
+        .attr("stroke-width", 2)
+        .attr("d", line);
+
+      svg
+        .append("path")
+        .datum(graphData)
+        .attr("fill", "none")
+        .attr("stroke", "#7683e4") // Main line color
+        .attr("stroke-width", 1)
+        .attr("d", line);
+    } catch (error) {
+      console.error(`Error fetching graph data for script ${scriptId}:`, error);
+    }
+  }
+
+  // Fetch and render call count for a specific script
+  async function fetchAndRenderCallCount(scriptId) {
+    try {
+      const response = await fetch(`/scripts/${scriptId}/calls?range=24h`);
+      const { callCount } = await response.json();
+
+      // Update the call count text
+      const callCountElement = document.getElementById(
+        `call-count-${scriptId}`
+      );
+      callCountElement.textContent = `${callCount} calls in the last 24h`;
+    } catch (error) {
+      console.error(`Error fetching call count for script ${scriptId}:`, error);
+    }
+  }
 
   // Submit Script Form
   scriptForm.addEventListener("submit", async (e) => {
@@ -352,8 +570,13 @@ const fetchAndRenderScripts = async () => {
     fetchAndRenderScripts(); // Refresh script cards
   });
 
+  function showOptions(scriptId) {
+    const optionsPopup = document.getElementById(`options-${scriptId}`);
+    optionsPopup.classList.toggle("hidden");
+  }
+  window.showOptions = showOptions;
+
   // Initial Fetch
   fetchAndRenderScripts();
   fetchAndRenderSites();
 });
-
