@@ -87,6 +87,15 @@ We welcome contributions! Please:
 1. Fork the repository.
 2. Create a new branch: git checkout -b feature-name.
 3. Submit a pull request with your changes.
+4. Gives us a big ol star! ⭐️
+
+<a href="https://star-history.com/#lklynet/injectly&Timeline">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=lklynet/injectly&type=Timeline&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=lklynet/injectly&type=Timeline" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=lklynet/injectly&type=Timeline" />
+ </picture>
+</a>
 
 ### **Feedback**
 
