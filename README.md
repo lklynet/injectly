@@ -100,5 +100,3 @@ We welcome contributions! Please:
 ### **Feedback**
 
 If you encounter bugs or have suggestions, please open an issue on GitHub or contact me directly: <hi@lkly.net>
-
-Let me know if you’d like to add any additional sections or customize it further!
