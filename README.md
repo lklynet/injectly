@@ -15,7 +15,6 @@
 - **Granular Control**: Assign scripts to specific websites or manage global scripts.
 - **Site Management**: Add, edit, and delete website entries with distinct, color-coded flags for clarity.
 - **Centralized Management**: Add, edit, and delete scripts with real-time updates across all linked sites.
-- **Minimalist Design**: A sleek and responsive UI built with Tailwind CSS for a modern look and feel.
 - **Self-Hosted**: Total control over your data and functionality with lightweight deployment.
 
 ---
@@ -47,6 +46,37 @@ Visit <http://localhost:3000> in your web browser.
 
 ---
 
+## **Run with Docker**
+
+You can run Injectly without building from source using Docker.
+
+### **Option 1: Docker Run**
+
+```bash
+mkdir -p data
+docker run -d --name injectly \
+  -p 3000:3000 \
+  -v ./data:/data \
+  lklynet/injectly:latest
+```
+
+Then open <http://localhost:3000>.
+
+### **Option 2: Docker Compose**
+
+Download `docker-compose.yml` (or clone this repo), then:
+
+```bash
+mkdir -p data
+docker compose up -d
+# If your Docker uses the old plugin:
+# docker-compose up -d
+```
+
+Data is persisted in `./data` and the app listens on `http://localhost:3000`.
+
+---
+
 ## **Usage**
 
 ### **1. Add the Unique Script to Your Website:**
@@ -73,21 +103,6 @@ Copy the provided script tag from the Injectly dashboard and paste it into the `
 Any changes you make to the scripts in Injectly are automatically reflected on all websites using the embedded script.
 
 ---
-
-## **Tech Stack**
-
-- **Frontend**: Tailwind CSS for minimal, responsive design.
-- **Backend**: Node.js with Express.js for API and routing.
-- **Database**: SQLite for lightweight and fast data storage.
-
-## **Contributing**
-
-We welcome contributions! Please:
-
-1. Fork the repository.
-2. Create a new branch: git checkout -b feature-name.
-3. Submit a pull request with your changes.
-4. Gives us a big ol star! ⭐️
 
 <a href="https://star-history.com/#lklynet/injectly&Timeline">
  <picture>
